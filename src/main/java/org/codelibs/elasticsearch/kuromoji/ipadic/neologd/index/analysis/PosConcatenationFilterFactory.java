@@ -7,7 +7,7 @@ import java.util.Set;
 import org.apache.lucene.analysis.TokenStream;
 import org.codelibs.analysis.ja.PosConcatenationFilter;
 import org.codelibs.analysis.ja.PosConcatenationFilter.PartOfSpeechSupplier;
-import org.codelibs.neologd.ipadic.lucene.analysis.ja.tokenattributes.PartOfSpeechAttribute;
+import org.apache.lucene.analysis.ja.tokenattributes.PartOfSpeechAttribute;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
@@ -19,7 +19,7 @@ public class PosConcatenationFilterFactory extends AbstractTokenFilterFactory {
     private Set<String> posTags = new HashSet<>();
 
     public PosConcatenationFilterFactory(IndexSettings indexSettings, Environment environment, String name, Settings settings) {
-        super(indexSettings, name, settings);
+        super(name, settings);
 
         List<String> tagList = Analysis.getWordList(environment, settings, "tags");
         if (tagList != null) {

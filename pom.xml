@@ -11,7 +11,7 @@
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -26,30 +26,31 @@
 		<version>9</version>
 	</parent>
 	<properties>
-		<elasticsearch.version>7.2.1</elasticsearch.version>
+		<elasticsearch.version>8.4.0</elasticsearch.version>
 		<elasticsearch.plugin.classname>org.codelibs.elasticsearch.kuromoji.ipadic.neologd.KuromojiNeologdPlugin</elasticsearch.plugin.classname>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<lucene.version>8.0.0</lucene.version>
-		<kuromoji-ipadic-neologd.version>20190808</kuromoji-ipadic-neologd.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
+		<!-- see https://www.elastic.co/guide/en/elasticsearch/reference/current/dependencies-versions.html -->
+		<lucene.version>9.3.0</lucene.version>
+		<kuromoji-ipadic-neologd.version>20200910</kuromoji-ipadic-neologd.version>
 	</properties>
 	<repositories>
 		<repository>
 			<id>codelibs.org</id>
 			<name>CodeLibs Repository</name>
-			<url>http://maven.codelibs.org/</url>
+			<url>https://maven.codelibs.org/</url>
 		</repository>
 		<repository>
 			<name>oss.sonatype.org</name>
 			<id>oss.sonatype.org</id>
-			<url>http://oss.sonatype.org/content/groups/public/</url>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
 		</repository>
 	</repositories>
 	<build>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.10.1</version>
 				<configuration>
 					<source>${maven.compiler.source}</source>
 					<target>${maven.compiler.target}</target>
@@ -66,7 +67,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.2.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -78,7 +79,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.4.2</version>
 				<configuration>
 					<appendAssemblyId>false</appendAssemblyId>
 					<outputDirectory>${project.build.directory}/releases/</outputDirectory>
@@ -102,6 +103,12 @@
 			<groupId>org.elasticsearch</groupId>
 			<artifactId>elasticsearch</artifactId>
 			<version>${elasticsearch.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.codelibs</groupId>
+			<artifactId>lucene-analyzers-common-ipadic-neologd</artifactId>
+			<version>${lucene.version}-${kuromoji-ipadic-neologd.version}</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

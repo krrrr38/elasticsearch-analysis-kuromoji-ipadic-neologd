@@ -1,73 +1,55 @@
-Elasticsearch Analysis Kuromoji IPADic Neologd
-=======================
+## elasticserach-analysis-kuromoji-ipadic-neologd
 
-## Overview
+- Elasticsearch 8.3
+- Lucene 9.3.0
 
-Elasticsearch Analysis Neologd Plugin provides Tokenizer/CharFilter/TokenFilter for Kuromoji with Neologd.
+## ローカル環境でのbuild方法
 
-## Version
+Based on https://github.com/kazuhira-r/kuromoji-with-mecab-neologd-buildscript.
 
-[Versions in Maven Repository](http://central.maven.org/maven2/org/codelibs/elasticsearch-analysis-kuromoji-ipadic-neologd/)
-[Old(<= 6.5.1) Repository](http://central.maven.org/maven2/org/codelibs/elasticsearch-analysis-kuromoji-neologd/)
+```sh
+WORKDIR=$(pwd)
+MAX_BASEFORM_LENGTH=15
+INSTALL_ADJECTIVE_EXT=0
 
-### Issues/Questions
+-- mecab-ipadic-neologdで辞書ファイルの作成
+-- 成果物: mecab-ipadic-neologd/build/mecab-ipadic-2.7.0-20070801-neologd-20200910/* の作成
+git clone git@github.com:neologd/mecab-ipadic-neologd.git
+cd ${WORKDIR}/mecab-ipadic-neologd
+git checkout master
+git fetch origin
+git reset --hard origin/master
+libexec/make-mecab-ipadic-neologd.sh -L ${MAX_BASEFORM_LENGTH} -T ${INSTALL_ADJECTIVE_EXT}
 
-Please file an [issue](https://github.com/codelibs/elasticsearch-analysis-kuromoji-ipadic-neologd/issues "issue").
-(Japanese forum is [here](https://github.com/codelibs/codelibs-ja-forum "here").)
+-- lucene/analysis/kuromoji 用のgenerated fileを一時的に作成(後にoverrideされるもの)
+-- 成果物: lucene/analysis/kuromoji/build/generate/mecab-ipadic-2.7.0-20070801 directoryの作成
+cd ${WORKDIR}
+git clone git@github.com:apache/lucene.git
+cd ${WORKDIR}/lucene
+git checkout releases/lucene/9.3.0
+./gradlew -p lucene/analysis/kuromoji regenerate
 
-## Installation
+-- mecab-ipadic-neologdの辞書ファイルをコピー
+cp -R ../mecab-ipadic-neologd/build/mecab-ipadic-2.7.0-20070801-neologd-20200910/* lucene/analysis/kuromoji/build/generate/mecab-ipadic-2.7.0-20070801
 
-    $ $ES_HOME/bin/elasticsearch-plugin install org.codelibs:elasticsearch-analysis-kuromoji-ipadic-neologd:7.1.0
+-- lucene/analysis/kuromojiのbuild (コピーされたmecab-ipadic-neologdを含むもの)
+-- 成果物: lucene/analysis/kuromoji/build/libs/lucene-analysis-kuromoji-10.0.0-SNAPSHOT.jar
+./gradlew -p lucene/analysis/common assemble
+./gradlew -p lucene/analysis/kuromoji assemble
 
-## References
+-- jarをmvnから利用できるようにするために登録 (既存のシステムに載るため、groupId等はorg.codelibsを流用)
+mvn install:install-file -Dfile=lucene/analysis/kuromoji/build/libs/lucene-analysis-kuromoji-10.0.0-SNAPSHOT.jar -DgroupId=org.codelibs -DartifactId=lucene-analyzers-kuromoji-ipadic-neologd -Dversion=9.3.0-20200910 -Dpackaging=jar
+mvn install:install-file -Dfile=lucene/analysis/common/build/libs/lucene-analysis-common-10.0.0-SNAPSHOT.jar -DgroupId=org.codelibs -DartifactId=lucene-analyzers-common-ipadic-neologd -Dversion=9.3.0-20200910 -Dpackaging=jar
 
-### Analyzer, Tokenizer, TokenFilter, CharFilter
+-- elasticsearch-analysis-kuromoji-ipadic-neologd (本repository)
+-- 成果物: elasticsearch-analysis-kuromoji-ipadic-neologd/target/releases/elasticsearch-analysis-kuromoji-ipadic-neologd-7.2.1-SNAPSHOT.zip
+mvn package -Dmaven.test.skip
+```
 
-The plugin includes these analyzer and tokenizer, tokenfilter.
+## インストール方法
 
-| name                                             | type        |
-|:-------------------------------------------------|:-----------:|
-| kuromoji\_ipadic\_neologd\_iteration\_mark       | charfilter  |
-| kuromoji\_ipadic\_neologd                        | analyzer    |
-| kuromoji\_ipadic\_neologd\_tokenizer             | tokenizer   |
-| kuromoji\_ipadic\_neologd\_baseform              | tokenfilter |
-| kuromoji\_ipadic\_neologd\_part\_of\_speech      | tokenfilter |
-| kuromoji\_ipadic\_neologd\_readingform           | tokenfilter |
-| kuromoji\_ipadic\_neologd\_stemmer               | tokenfilter |
-
-### Usage
-
-See [Elasticsearch Kuromoji](https://github.com/elastic/elasticsearch-analysis-kuromoji "elasticsearch-analysis-kuromoji").
-
-### Update Kuromoji Jar File
-
-If you want to replace with the latest Lucene Neologd jar file, download it from https://maven.codelibs.org/org/codelibs/lucene-analyzers-kuromoji-ipadic-neologd/ and then replace old file in $ES_HOME/plugins/analysis-kuromoji-ipadic-neologd.
-
-### What is NEologd
-
-See [mecab-ipadic-NEologd](https://github.com/neologd/mecab-ipadic-neologd "mecab-ipadic-NEologd").
-
-## Use Lucene Kuromoji for Neologd
-
-If you want to use Lucene Kuromoji for Neologd in your application other than elasticsearch, you can use lucene-analyzers-kuromoji-ipadic-neologd jar file, not this plugin.
-To use the jar file, put the following settings into your pom.xml.
-
-    ...
-    <repositories>
-        <repository>
-            <id>codelibs.org</id>
-            <name>CodeLibs Repository</name>
-            <url>https://maven.codelibs.org/</url>
-        </repository>
-    </repositories>
-    ...
-    <dependencies>
-        <dependency>
-            <groupId>org.codelibs</groupId>
-            <artifactId>lucene-analyzers-kuromoji-ipadic-neologd</artifactId>
-            <version>6.4.0-20180927</version>
-            <!-- https://maven.codelibs.org/org/codelibs/lucene-analyzers-kuromoji-ipadic-neologd/ --->
-        </dependency>
-    ...
-
-See [CodeLibs Maven Repository](https://maven.codelibs.org/org/codelibs/lucene-analyzers-kuromoji-ipadic-neologd/).
+```sh
+> ./bin/elasticsearch-plugin install --batch file://path/to/elasticsearch-analysis-kuromoji-ipadic-neologd-7.2.1-SNAPSHOT.zip
+> ./bin/elasticsearch-plugin list
+analysis-kuromoji-ipadic-neologd
+```

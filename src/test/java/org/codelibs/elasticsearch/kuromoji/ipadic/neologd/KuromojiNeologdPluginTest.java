@@ -20,9 +20,9 @@ import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
-import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentFactory;
+import org.elasticsearch.xcontent.XContentType;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.rest.RestStatus;
@@ -51,8 +51,8 @@ public class KuromojiNeologdPluginTest {
             public void build(final int number, final Builder settingsBuilder) {
                 settingsBuilder.put("http.cors.enabled", true);
                 settingsBuilder.put("http.cors.allow-origin", "*");
+                settingsBuilder.put("discovery.type", "single-node");
                 settingsBuilder.putList("discovery.seed_hosts", "127.0.0.1:9301");
-                settingsBuilder.putList("cluster.initial_master_nodes", "127.0.0.1:9301");
             }
         }).build(newConfigs().clusterName(clusterName).numOfNode(numOfNode)
                 .pluginTypes("org.codelibs.elasticsearch.kuromoji.ipadic.neologd.KuromojiNeologdPlugin"));
@@ -92,7 +92,6 @@ public class KuromojiNeologdPluginTest {
         Node node = runner.node();
 
         final String index = "dataset";
-        final String type = "item";
 
         final String indexSettings = "{\"index\":{\"analysis\":{" + "\"tokenizer\":{"//
                 + "\"kuromoji_user_dict\":{\"type\":\"kuromoji_ipadic_neologd_tokenizer\",\"mode\":\"extended\",\"user_dictionary\":\"userdict_ja.txt\"}"
@@ -106,7 +105,6 @@ public class KuromojiNeologdPluginTest {
         // create a mapping
         final XContentBuilder mappingBuilder = XContentFactory.jsonBuilder()//
                 .startObject()//
-                .startObject(type)//
                 .startObject("properties")//
 
                 // id
@@ -121,15 +119,14 @@ public class KuromojiNeologdPluginTest {
                 .endObject()//
 
                 .endObject()//
-                .endObject()//
                 .endObject();
-        runner.createMapping(index, type, mappingBuilder);
+        runner.createMapping(index, mappingBuilder);
 
-        final IndexResponse indexResponse1 = runner.insert(index, type, "1", "{\"msg\":\"東京スカイツリー\", \"id\":\"1\"}");
+        final IndexResponse indexResponse1 = runner.insert(index, "1", "{\"msg\":\"東京スカイツリー\", \"id\":\"1\"}");
         assertEquals(RestStatus.CREATED, indexResponse1.status());
         runner.refresh();
 
-        assertDocCount(1, index, type, "msg", "東京スカイツリー");
+        assertDocCount(1, index, "msg", "東京スカイツリー");
 
         String text = "東京スカイツリー";
         try (CurlResponse response = EcrCurl.post(node, "/" + index + "/_analyze").header("Content-Type", "application/json")
@@ -150,9 +147,9 @@ public class KuromojiNeologdPluginTest {
 
     }
 
-    private void assertDocCount(int expected, final String index, final String type, final String field, final String value) {
+    private void assertDocCount(int expected, final String index, final String field, final String value) {
         final SearchResponse searchResponse =
-                runner.search(index, type, QueryBuilders.matchPhraseQuery(field, value), null, 0, numOfDocs);
+                runner.search(index, QueryBuilders.matchPhraseQuery(field, value), null, 0, numOfDocs);
         assertEquals(expected, searchResponse.getHits().getTotalHits().value);
     }
 }

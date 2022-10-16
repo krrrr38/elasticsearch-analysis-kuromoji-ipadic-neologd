@@ -19,7 +19,7 @@
 package org.codelibs.elasticsearch.kuromoji.ipadic.neologd.index.analysis;
 
 import org.apache.lucene.analysis.TokenStream;
-import org.codelibs.neologd.ipadic.lucene.analysis.ja.JapaneseNumberFilter;
+import org.apache.lucene.analysis.ja.JapaneseNumberFilter;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
@@ -28,7 +28,7 @@ import org.elasticsearch.index.analysis.AbstractTokenFilterFactory;
 public class KuromojiNumberFilterFactory extends AbstractTokenFilterFactory {
 
     public KuromojiNumberFilterFactory(IndexSettings indexSettings, Environment environment, String name, Settings settings) {
-        super(indexSettings, name, settings);
+        super(name, settings);
     }
 
     @Override

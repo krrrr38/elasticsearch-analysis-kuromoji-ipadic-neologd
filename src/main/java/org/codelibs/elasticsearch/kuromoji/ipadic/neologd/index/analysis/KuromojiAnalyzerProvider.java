@@ -22,9 +22,9 @@ package org.codelibs.elasticsearch.kuromoji.ipadic.neologd.index.analysis;
 import java.util.Set;
 
 import org.apache.lucene.analysis.CharArraySet;
-import org.codelibs.neologd.ipadic.lucene.analysis.ja.JapaneseAnalyzer;
-import org.codelibs.neologd.ipadic.lucene.analysis.ja.JapaneseTokenizer;
-import org.codelibs.neologd.ipadic.lucene.analysis.ja.dict.UserDictionary;
+import org.apache.lucene.analysis.ja.JapaneseAnalyzer;
+import org.apache.lucene.analysis.ja.JapaneseTokenizer;
+import org.apache.lucene.analysis.ja.dict.UserDictionary;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
@@ -36,7 +36,7 @@ public class KuromojiAnalyzerProvider extends AbstractIndexAnalyzerProvider<Japa
     private final JapaneseAnalyzer analyzer;
 
     public KuromojiAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings) {
-        super(indexSettings, name, settings);
+        super(name, settings);
         final Set<?> stopWords = Analysis.parseStopWords(env, settings, JapaneseAnalyzer.getDefaultStopSet());
         final JapaneseTokenizer.Mode mode = KuromojiTokenizerFactory.getMode(settings);
         final UserDictionary userDictionary = KuromojiTokenizerFactory.getUserDictionary(env, settings);
